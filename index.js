@@ -16,11 +16,8 @@ const upload=multer({storage:storage});
 const {Pool}=require("pg");
 const pool=new Pool(
     {
-        host:"localhost",
-        user:"postgres",
-        password:"IECS",
-        database:"Registration Form",
-        port:5432
+        connectionString: process.env.DATABASE_URL,
+        ssl: {rejectUnauthorized: false}
     }
 )
 const bodyParser=require("body-parser");
@@ -29,28 +26,30 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended:true}));
 app.get("/",(req,res)=>
 {
-    
+    res.sendFile(__dirname + "/public/index.html");   
 });
-app.post("/form",upload.single("file"),(req,res)=>
-{
-    let file=req.file.originalname;
-    let{reno,snm,bch,sed,adr}=req.body;
-    async function connectDB()
-    {
-        try {
-                await pool.connect();
-                console.log("Connected");
-                const qry="insert into Registered_details values('"+reno+"','"+snm+"','"+bch+"','"+sed+"','"+file+"','"+adr+"')";
-                const result=await pool.query(qry);
-                console.log("data stored",result.rows);
-                res.redirect("index.html");
-        } catch (error) {
-                console.error("Disconnected",error);
-        }
+app.post("/form", upload.single("file"), async (req, res) => {
+    try {
+      let file = req.file.originalname;
+      let { reno, snm, bch, sed, adr } = req.body;
+  
+      const qry = `
+        INSERT INTO Registered_details 
+        (rollno, name, branch, section, file, address)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `;
+  
+      await pool.query(qry, [reno, snm, bch, sed, file, adr]);
+  
+      console.log("Data stored");
+      res.redirect("index.html");
+  
+    } catch (error) {
+      console.error("Error:", error);
+      res.send("Error occurred");
     }
-    connectDB()
-});
-app.listen(4567,()=>
-{
-    console.log("server chl rha h!");
+  });
+const PORT = process.env.PORT || 4567;
+app.listen(PORT, () => {
+    console.log("server running");
 });
