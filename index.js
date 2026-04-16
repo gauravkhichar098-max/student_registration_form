@@ -50,7 +50,7 @@ app.post("/form",upload.single("file"),(req,res)=>
     }
     connectDB()
 });
-app.listen(4567,()=>
-{
-    console.log("server chl rha h!");
+const PORT = process.env.PORT || 4567;
+app.listen(PORT, () => {
+    console.log("server running");
 });
