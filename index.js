@@ -16,11 +16,8 @@ const upload=multer({storage:storage});
 const {Pool}=require("pg");
 const pool=new Pool(
     {
-        host:"localhost",
-        user:"postgres",
-        password:"IECS",
-        database:"Registration Form",
-        port:5432
+        connectionString: process.env.DATABASE_URL,
+        ssl: {rejectUnauthorized: false}
     }
 )
 const bodyParser=require("body-parser");
